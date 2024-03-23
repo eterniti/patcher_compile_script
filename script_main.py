@@ -112,7 +112,7 @@ def make_xv2patcher(dinput8=False):
         
         shutil.copy("./xv2patcher/xinput1_3.dll", "./xinput1_3.dll")
 
-    print("xv2patcher was compiled succesfully.")
+    print("xv2patcher was compiled successfully.")
 
 def make_clean_xv2patcher(dinput8=False):
     if dinput8:
@@ -144,7 +144,7 @@ def start():
             
             download_idx = 0
             if not default_mode:
-                download_idx = option_menu("Choose version (only choose UCRT if Windows 10/11):", option_names)
+                download_idx = option_menu("Choose version (UCRT will only work in Windows 10/11):", option_names)
 
             download_url = download_list[download_idx]
         else:
@@ -155,7 +155,7 @@ def start():
 
             download_idx = 0
             if not default_mode:
-                download_idx = option_menu("Choose version (only choose UCRT if Windows 10/11):", option_names)
+                download_idx = option_menu("Choose version (UCRT will only work in Windows 10/11):", option_names)
 
             download_url = download_list[download_idx]
                         
@@ -174,6 +174,7 @@ def start():
             jobs = int(options[idx])
 
     if not is_minhook_installed():
+        clear_directory(minhook_dir)
         print("MinHook 1.3.3 source will be downloaded now.")
         download_file("https://github.com/TsudaKageyu/minhook/archive/refs/tags/v1.3.3.zip", "minhook.zip")
         extract("minhook.zip", "./")
@@ -201,4 +202,4 @@ def start():
     print("Cleaning compilation...")
     make_clean_xv2patcher(True) 
 
-    print("The script has terminated succesfully (probably!)")
+    print("The script has terminated successfully (probably!)")
