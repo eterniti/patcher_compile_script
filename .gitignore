@@ -1,0 +1,8 @@
+*.dll
+eternity_common/
+xv2patcher/
+__pycache__/
+minhook-1.3.3/
+tmp/
+venv/
+mingw64/
