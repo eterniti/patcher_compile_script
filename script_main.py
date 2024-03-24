@@ -4,7 +4,6 @@ import sys
 import shutil
 import requests
 import git
-import gc
 import py7zr
 import zipfile
 from urllib.parse import urlparse
@@ -125,8 +124,10 @@ def install_minhook():
     shutil.copy(f"{minhook_dir}/libMinHook.a", "./mingw64/x86_64-w64-mingw32/lib/")
         
 def start():
+    global jobs
+    
     print("Welcome. This script will build xv2patcher from source and optionally install it.")
-    default_mode = option_menu("Choose a mode:", ["Default (default values will be chosen, you will be asked less questions)", "Custom (you will be asked more questions)"]) == 0
+    custom_mode = option_menu("Choose a mode:", ["Default (default values will be chosen, you will be asked less questions)", "Custom (you will be asked more questions)"]) == 1
     
     if not is_mingw64_installed():
         download_url = ""
@@ -134,7 +135,7 @@ def start():
         dest = "./mingw64.7z"
         
         source_option = 0 
-        if not default_mode:
+        if custom_mode:
             source_option = option_menu("Choose desired source for MingW64:", source_list)
             
         if source_option == 0: 
@@ -143,7 +144,7 @@ def start():
             option_names = [ "GCC 13.1 (MSVCRT)", "GCC 13.1 (UCRT)", "GCC 11.2 (MSVCRT)" ]
             
             download_idx = 0
-            if not default_mode:
+            if custom_mode:
                 download_idx = option_menu("Choose version (UCRT will only work in Windows 10/11):", option_names)
 
             download_url = download_list[download_idx]
@@ -154,7 +155,7 @@ def start():
             option_names = [ "GCC 13.2 (MSVCRT)", "GCC 13.2 (UCRT)", "GCC 8.5 (MSVCRT)"]
 
             download_idx = 0
-            if not default_mode:
+            if custom_mode:
                 download_idx = option_menu("Choose version (UCRT will only work in Windows 10/11):", option_names)
 
             download_url = download_list[download_idx]
@@ -167,8 +168,8 @@ def start():
     new_path = f"{current_path};{mingwbin_path}"
     os.environ['PATH'] = new_path
 
-    if not default_mode:
-        options = ["CPU Count", "1", "2", "4", "8", "16", "32"]
+    if custom_mode:
+        options = [f"Number of Cores ({jobs})", "1", "2", "4", "8", "16", "32"]
         idx = option_menu("Choose the number of jobs for compilation.", options)
         if idx > 0:
             jobs = int(options[idx])
