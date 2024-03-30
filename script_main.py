@@ -6,6 +6,7 @@ import requests
 import git
 import py7zr
 import zipfile
+import psutil
 from urllib.parse import urlparse
 
 minhook_dir = "./minhook-1.3.3"
@@ -16,8 +17,8 @@ def printc(msg, c):
         print(f"\033[31m{msg}\033[0m")
     elif c == 'G':
         print(f"\033[32m{msg}\033[0m")
-    else:
-        print(f"\033[34m{msg}\033[0m")
+    else: # Y
+        print(f"\033[33m{msg}\033[0m")
 
 def option_menu(msg, options):
     print(msg)
@@ -98,6 +99,7 @@ def is_minhook_installed():
     return os.path.isfile("./mingw64/x86_64-w64-mingw32/include/MinHook.h") and os.path.isfile("./mingw64/x86_64-w64-mingw32/lib/libMinHook.a")
 
 def make_minhook():
+    printc("Will compile MinHook now...", 'Y')
     subprocess.run(["mingw32-make.exe", "-f", "./build/MinGW/Makefile", "-j", str(jobs)], cwd=os.path.abspath(minhook_dir), shell=True)
 
     if not os.path.isfile(f"{minhook_dir}/libMinHook.a"):
@@ -107,6 +109,7 @@ def make_minhook():
 
 def make_xv2patcher(dinput8=False):
     if dinput8:
+        printc("Will now compile the dinput8 version of xv2patcher...", 'Y')
         subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/dinput8.dll"):
             printc("Compilation of xv2patcher failed", 'R')
@@ -114,6 +117,7 @@ def make_xv2patcher(dinput8=False):
         
         shutil.copy("./xv2patcher/dinput8.dll", "./dinput8.dll")
     else:
+        printc("Will compile xv2patcher now...", 'Y')
         subprocess.run(["mingw32-make.exe", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/xinput1_3.dll"):
             printc("Compilation of xv2patcher failed", 'R')
@@ -124,6 +128,8 @@ def make_xv2patcher(dinput8=False):
     printc("xv2patcher was compiled successfully.", 'G')
 
 def make_clean_xv2patcher(dinput8=False):
+    printc("Cleaning compilation...", 'Y')
+    
     try:
         if dinput8:
             subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
@@ -131,10 +137,13 @@ def make_clean_xv2patcher(dinput8=False):
             subprocess.run(["mingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
         
         printc("Clean successful.", 'G')
-    except Exception:
+    except Exception as e:
+        print(e)
         printc("Clean failed (not critical)", 'R')
 
 def install_minhook():
+    printc("Will install MinHook to MingW64 now...", 'Y')
+
     try:
         shutil.copy(f"{minhook_dir}/include/MinHook.h", "./mingw64/x86_64-w64-mingw32/include/")
         shutil.copy(f"{minhook_dir}/libMinHook.a", "./mingw64/x86_64-w64-mingw32/lib/")
@@ -142,11 +151,46 @@ def install_minhook():
     except Exception:
         printc("Failed to install minhook.", 'R')
         exit(-1)
+
+def get_mounted_drives():
+    drives = []
+    for partition in psutil.disk_partitions():
+        if partition.mountpoint:
+            drives.append(partition.mountpoint)
+    return drives
+
+def locate_installations():
+    installs = []
+    usual_paths = ["Program Files (x86)\\Steam\\steamapps\\common\\", "SteamLibrary\\steamapps\\common\\", "Games\\"]
+    drives = get_mounted_drives()
+    for drive in drives:
+        for path in usual_paths:
+            candidate = drive + path + "DB Xenoverse 2\\bin"
+            if os.path.isdir(candidate):
+                installs.append(candidate)
+    return installs
+
+def install_patcher(dll, dir):
+    printc(f"Installing patcher into {dir}...", 'Y')
+
+    try:
+        shutil.copy(dll, dir)
+        xml_in = "./xv2patcher/Epatches"
+        xml_out = dir + "\\..\\XV2PATCHER\\Epatches"
+        printc("Installing xml files...", "Y")
+        os.makedirs(xml_out, exist_ok=True) 
+        shutil.copytree(xml_in, xml_out, dirs_exist_ok=True)
+        #TODO: a default .ini file if one is not already there  
+        printc("Patcher installed succesfully.", 'G')
+    except Exception as e:
+        print(e)
+        printc(f"Installation of patcher failed. Most likely reason is lack of writing permissions in {dir}.\nPlease install it manually.", 'R')
         
 def start():
     global jobs
     
-    print("Welcome. This script will build xv2patcher from source and optionally install it.")
+    os.system("") # <- fix for colors not working on some Windows versions
+    printc("Welcome. This script will build xv2patcher from source and optionally install it.", 'Y')
     custom_mode = option_menu("Choose a mode:", ["Default (default values will be chosen, you will be asked less questions)", "Custom (you will be asked more questions)"]) == 1
     
     if not is_mingw64_installed():
@@ -196,13 +240,11 @@ def start():
 
     if not is_minhook_installed():
         clear_directory(minhook_dir)
-        printc("MinHook 1.3.3 source will be downloaded now.", 'B')
+        printc("MinHook 1.3.3 source will be downloaded now.", 'Y')
         download_file("https://github.com/TsudaKageyu/minhook/archive/refs/tags/v1.3.3.zip", "minhook.zip")
         extract("minhook.zip", "./")
 
-        printc("Will compile MinHook now...", 'B')
         make_minhook()
-        print("Will install MinHook to MingW64 now...", 'B')
         install_minhook()
 
     clear_directory("./eternity_common")
@@ -211,16 +253,32 @@ def start():
     download_repo("https://github.com/eterniti/eternity_common", "./eternity_common")
     download_repo("https://github.com/eterniti/xv2patcher", "./xv2patcher")
 
-    printc("Will compile xv2patcher now...", 'B')
-    make_xv2patcher()
-
-    printc("Cleaning compilation...", 'B')
+    make_xv2patcher()    
     make_clean_xv2patcher() 
-
-    printc("Will now compile the dinput8 version of xv2patcher...", 'B')
     make_xv2patcher(True)
-
-    printc("Cleaning compilation...", 'B')
     make_clean_xv2patcher(True) 
+    
+    msg = "Do you want to install the patcher?\nNote: uppon selecting Yes, the script will scan most common location for a DBXV2 install.\nIf more than one installation is found, you will be able to choose one."
+    if option_menu(msg, ["Yes", "No"]) == 0:  
+        installs = locate_installations()
+        if len(installs) == 0:
+            printc("No DBXV2 installation was found on this machine. Please install it manually.", 'R')
+        else:
+            install_dir = installs[0]
+            if len(installs) > 1:
+                idx = option_menu("Several DBXV2 installations have been found. Choose the one to install to.", installs)
+                install_dir = installs[idx]
+
+            dll = ""
+            if os.path.isfile(install_dir + "\\xinput1_3.dll"):
+                dll = "./xinput1_3.dll"
+            elif os.path.isfile(install_dir + "\\dinput8.dll"):
+                dll = "./dinput8.dll"
+            else:
+                dll = "./xinput1_3.dll"
+                if option_menu("Which version of the patcher do you want to install? (Choose 1 if you're not sure)", ["xinput1_3", "dinput8"]) == 1:
+                    dll = "./dinput8.dll"    
+
+            install_patcher(dll, install_dir)        
 
     printc("The script has terminated successfully (probably!)", 'G')
