@@ -2,9 +2,7 @@
 
 set "VENV_DIR=%~dp0%venv"
 
-mkdir tmp 2>NUL
-
-dir "%VENV_DIR%\Scripts\Python.exe" >tmp/stdout.txt 2>tmp/stderr.txt
+dir "%VENV_DIR%\Scripts\Python.exe" >NUL 2>NUL
 if %ERRORLEVEL% == 0 goto :activate
 echo Creating venv...
 py.exe -m venv "%VENV_DIR%"

@@ -11,6 +11,14 @@ from urllib.parse import urlparse
 minhook_dir = "./minhook-1.3.3"
 jobs = os.cpu_count()
 
+def printc(msg, c):
+    if c == 'R':
+        print(f"\033[31m{msg}\033[0m")
+    elif c == 'G':
+        print(f"\033[32m{msg}\033[0m")
+    else:
+        print(f"\033[34m{msg}\033[0m")
+
 def option_menu(msg, options):
     print(msg)
     
@@ -101,27 +109,39 @@ def make_xv2patcher(dinput8=False):
     if dinput8:
         subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/dinput8.dll"):
-            sys.exit("Compilation of xv2patcher failed")
+            printc("Compilation of xv2patcher failed", 'R')
+            exit(-1)
         
         shutil.copy("./xv2patcher/dinput8.dll", "./dinput8.dll")
     else:
         subprocess.run(["mingw32-make.exe", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/xinput1_3.dll"):
-            sys.exit("Compilation of xv2patcher failed")
+            printc("Compilation of xv2patcher failed", 'R')
+            exit(-1)
         
         shutil.copy("./xv2patcher/xinput1_3.dll", "./xinput1_3.dll")
 
-    print("xv2patcher was compiled successfully.")
+    printc("xv2patcher was compiled successfully.", 'G')
 
 def make_clean_xv2patcher(dinput8=False):
-    if dinput8:
-        subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
-    else:
-        subprocess.run(["mingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+    try:
+        if dinput8:
+            subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+        else:
+            subprocess.run(["mingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+        
+        printc("Clean successful.", 'G')
+    except Exception:
+        printc("Clean failed (not critical)", 'R')
 
 def install_minhook():
-    shutil.copy(f"{minhook_dir}/include/MinHook.h", "./mingw64/x86_64-w64-mingw32/include/")
-    shutil.copy(f"{minhook_dir}/libMinHook.a", "./mingw64/x86_64-w64-mingw32/lib/")
+    try:
+        shutil.copy(f"{minhook_dir}/include/MinHook.h", "./mingw64/x86_64-w64-mingw32/include/")
+        shutil.copy(f"{minhook_dir}/libMinHook.a", "./mingw64/x86_64-w64-mingw32/lib/")
+        printc("Minhook succesfully installed into mingw64.", 'G')
+    except Exception:
+        printc("Failed to install minhook.", 'R')
+        exit(-1)
         
 def start():
     global jobs
@@ -176,13 +196,13 @@ def start():
 
     if not is_minhook_installed():
         clear_directory(minhook_dir)
-        print("MinHook 1.3.3 source will be downloaded now.")
+        printc("MinHook 1.3.3 source will be downloaded now.", 'B')
         download_file("https://github.com/TsudaKageyu/minhook/archive/refs/tags/v1.3.3.zip", "minhook.zip")
         extract("minhook.zip", "./")
 
-        print("Will compile MinHook now...")
+        printc("Will compile MinHook now...", 'B')
         make_minhook()
-        print("Will install MinHook to MingW64 now...")
+        print("Will install MinHook to MingW64 now...", 'B')
         install_minhook()
 
     clear_directory("./eternity_common")
@@ -191,16 +211,16 @@ def start():
     download_repo("https://github.com/eterniti/eternity_common", "./eternity_common")
     download_repo("https://github.com/eterniti/xv2patcher", "./xv2patcher")
 
-    print("Will compile xv2patcher now...")
+    printc("Will compile xv2patcher now...", 'B')
     make_xv2patcher()
 
-    print("Cleaning compilation...")
+    printc("Cleaning compilation...", 'B')
     make_clean_xv2patcher() 
 
-    print("Will now compile the dinput8 version of xv2patcher...")
+    printc("Will now compile the dinput8 version of xv2patcher...", 'B')
     make_xv2patcher(True)
 
-    print("Cleaning compilation...")
+    printc("Cleaning compilation...", 'B')
     make_clean_xv2patcher(True) 
 
-    print("The script has terminated successfully (probably!)")
+    printc("The script has terminated successfully (probably!)", 'G')

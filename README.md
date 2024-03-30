@@ -16,4 +16,4 @@ After all is done, both dll will be placed in the same directory than this READM
 
 TODO: 
 - add something to locate a DBXV2 installation and copy the .dll there (this will be optional)
-- add some green/red/blue colors here and there to make this thing less ugly
+- add some green/red/blue colors here and there to make this thing less ugly (DONE)
