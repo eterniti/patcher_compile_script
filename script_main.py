@@ -105,7 +105,7 @@ def make_minhook():
     if not os.path.isfile(f"{minhook_dir}/libMinHook.a"):
         sys.exit("Compilation of MinHook failed")
 
-    print("MinHook was compiled successfully.")
+    printc("MinHook was compiled successfully.", "G")
 
 def make_xv2patcher(dinput8=False):
     if dinput8:
