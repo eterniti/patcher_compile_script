@@ -93,14 +93,14 @@ def clear_directory(directory):
             shutil.rmtree(dir_path, onerror=force_remove_readonly)
 
 def is_mingw64_installed():
-    return os.path.isfile("./mingw64/bin/mingw32-make.exe")
+    return os.path.isfile("./mingw64/bin/zzzmingw32-make.exe")
 
 def is_minhook_installed():
     return os.path.isfile("./mingw64/x86_64-w64-mingw32/include/MinHook.h") and os.path.isfile("./mingw64/x86_64-w64-mingw32/lib/libMinHook.a")
 
 def make_minhook():
     printc("Will compile MinHook now...", 'Y')
-    subprocess.run(["mingw32-make.exe", "-f", "./build/MinGW/Makefile", "-j", str(jobs)], cwd=os.path.abspath(minhook_dir), shell=True)
+    subprocess.run(["zzzmingw32-make.exe", "-f", "./build/MinGW/Makefile", "-j", str(jobs)], cwd=os.path.abspath(minhook_dir), shell=True)
 
     if not os.path.isfile(f"{minhook_dir}/libMinHook.a"):
         sys.exit("Compilation of MinHook failed")
@@ -110,7 +110,7 @@ def make_minhook():
 def make_xv2patcher(dinput8=False):
     if dinput8:
         printc("Will now compile the dinput8 version of xv2patcher...", 'Y')
-        subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
+        subprocess.run(["zzzmingw32-make.exe", "-f", "Makefile.dinput8", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/dinput8.dll"):
             printc("Compilation of xv2patcher failed", 'R')
             exit(-1)
@@ -118,7 +118,7 @@ def make_xv2patcher(dinput8=False):
         shutil.copy("./xv2patcher/dinput8.dll", "./dinput8.dll")
     else:
         printc("Will compile xv2patcher now...", 'Y')
-        subprocess.run(["mingw32-make.exe", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
+        subprocess.run(["zzzmingw32-make.exe", "-j", str(jobs)], cwd=os.path.abspath("./xv2patcher"), shell=True)
         if not os.path.isfile("./xv2patcher/xinput1_3.dll"):
             printc("Compilation of xv2patcher failed", 'R')
             exit(-1)
@@ -132,9 +132,9 @@ def make_clean_xv2patcher(dinput8=False):
     
     try:
         if dinput8:
-            subprocess.run(["mingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+            subprocess.run(["zzzmingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
         else:
-            subprocess.run(["mingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+            subprocess.run(["zzzmingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
         
         printc("Clean successful.", 'G')
     except Exception as e:
@@ -226,6 +226,7 @@ def start():
                         
         download_file(download_url, dest)
         extract(dest, "./")
+        shutil.copy("./mingw64/bin/mingw32-make.exe", "./mingw64/bin/zzzmingw32-make.exe") # to avoid path collision with another installation in the PATH
 
     current_path = os.environ.get('PATH', '')
     mingwbin_path = os.path.abspath("./mingw64/bin")
