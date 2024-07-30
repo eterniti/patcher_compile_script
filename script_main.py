@@ -228,10 +228,21 @@ def start():
         extract(dest, "./")
         shutil.copy("./mingw64/bin/mingw32-make.exe", "./mingw64/bin/zzzmingw32-make.exe") # to avoid path collision with another installation in the PATH
 
+    ### Temp code for debug. TODO: delete later   
+    printc(f"*** Existing PATH: {os.environ.get('PATH', '')}", 'R')
+    ###
+    
+    
     current_path = os.environ.get('PATH', '')
     mingwbin_path = os.path.abspath("./mingw64/bin")
     new_path = f"{current_path};{mingwbin_path}"
-    os.environ['PATH'] = new_path
+    os.environ['PATH'] = new_path  
+    
+    ### Temp code for debug. TODO: delete later
+    printc("*** Running g++ -v", 'R')
+    subprocess.run(["g++.exe", "-v"])
+    printc("*** END of g++ -v", 'R')
+    ###
 
     if custom_mode:
         options = [f"Number of Cores ({jobs})", "1", "2", "4", "8", "16", "32"]
@@ -259,7 +270,7 @@ def start():
     make_xv2patcher(True)
     make_clean_xv2patcher(True) 
     
-    msg = "Do you want to install the patcher?\nNote: uppon selecting Yes, the script will scan most common location for a DBXV2 install.\nIf more than one installation is found, you will be able to choose one."
+    msg = "Do you want to install the patcher?\nNote: upon selecting Yes, the script will scan most common location for a DBXV2 install.\nIf more than one installation is found, you will be able to choose one."
     if option_menu(msg, ["Yes", "No"]) == 0:  
         installs = locate_installations()
         if len(installs) == 0:
