@@ -228,22 +228,12 @@ def start():
         extract(dest, "./")
         shutil.copy("./mingw64/bin/mingw32-make.exe", "./mingw64/bin/zzzmingw32-make.exe") # to avoid path collision with another installation in the PATH
 
-    ### Temp code for debug. TODO: delete later   
-    printc(f"*** Existing PATH: {os.environ.get('PATH', '')}", 'R')
-    ###
-    
     
     current_path = os.environ.get('PATH', '')
     mingwbin_path = os.path.abspath("./mingw64/bin")
-    new_path = f"{current_path};{mingwbin_path}"
+    new_path = f"{mingwbin_path};{current_path}"
     os.environ['PATH'] = new_path  
     
-    ### Temp code for debug. TODO: delete later
-    printc("*** Running g++ -v", 'R')
-    subprocess.run(["g++.exe", "-v"])
-    printc("*** END of g++ -v", 'R')
-    ###
-
     if custom_mode:
         options = [f"Number of Cores ({jobs})", "1", "2", "4", "8", "16", "32"]
         idx = option_menu("Choose the number of jobs for compilation.", options)
