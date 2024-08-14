@@ -1,0 +1,31 @@
+This small guide will teach you how to properly compare that the dlls produced by DEFAULT SETTINGS (in concrete, default toolchain) of this script are equivalent to the one in the patcher release.
+
+First of all: DLL's cannot be compared with hash such as MD5, SHA1, etc. The reason is that the DLL has two timestamps, and one checksum (and the checksum also changes with the date).
+Instead, a byte-per-byte comparison using a program is needed, so that you can check that the differences are few and specific (they will be explained below).
+
+The program to use is HxD, a free hexeditor that can be downloaded from here: https://mh-nexus.de/en/hxd/
+(Other hexeditor may or may not have an equivalent functionality)
+
+Steps:
+- First verify that the two files to compare have exactly the same size in bytes. If they don't, they're different (if that's the case, verify that you used the script with default settings)
+- Open both dll files with HxD. 
+- Menu Analysis->Data compare->OK
+- HxD will show you the first difference. Without clicking anywhere (that may reset the comparison), keep pressing F6 to navigate to next difference while counting the number differences in your head, 
+  and keep pressing F6 until no more differences are found.
+- The total number of differences you counted should be <= 12 
+
+
+The <= 12 differences happen in 3 different section of the file (three 32 bits fields).
+And this is what these sections are:
+
+- Section 1: always at offsets 88-8B. This is a timestamp in Unix format (time_t) with the time and hour the .dll was built.
+  This timestamp is part of the PE (Portable Executable) format header. You can use HxD data inspector to check the date/hour (look for time_t (32bits))
+  
+- Section 2: always at offsets D8-DB. This is a checksum of the whole file except the checksum itself. Obviously if the date changes, the checksum changes too. 
+  This checksum is also part of the PE header.
+
+- Section 3: offset will vary in different versions of the patcher. This is another time stamp in Unix format (time_t), which should have an identical value to the one in Section 1, feel free to verify it.
+  This is NOT part of the PE header, this is in the body of the file. This is probably added by the compiler so that the program can access its own built date.
+  Note: it is possible that this field is actually 64 bits. That means, that in the unlikely events that someone is using this script in year >= 2038 (when 32 bits time_t overflow will happen),
+  or if someone fakes their system date above that date, the number of differences could increase from <= 12 to <= 16.
+
