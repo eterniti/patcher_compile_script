@@ -4,7 +4,9 @@ The latest version of the script can always be downloaded from: https://github.c
 
 
 This project is born from the paranoia introduced by antivirus vendor by flaging the patcher dlls as virus.
+
 The purpose is that just anyone can easily compile their own version of the patcher and compare it with the one from the release and verify they're EQUIVALENT.
+
 To compare the dll produced by this script and the official one, please read "HOW TO COMPARE DLLS.txt" (you can't just compare file hashes!)
 
 
