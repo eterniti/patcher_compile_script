@@ -91,6 +91,13 @@ def clear_directory(directory):
         for dir in dirs:
             dir_path = os.path.join(root, dir)
             shutil.rmtree(dir_path, onerror=force_remove_readonly)
+            
+def clean_extension(directory, extension):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(extension):
+                path = os.path.join(root, file)
+                os.remove(path)
 
 def is_mingw64_installed():
     return os.path.isfile("./mingw64/bin/zzzmingw32-make.exe")
@@ -131,10 +138,17 @@ def make_clean_xv2patcher(dinput8=False):
     printc("Cleaning compilation...", 'Y')
     
     try:
-        if dinput8:
+        '''if dinput8:
             subprocess.run(["zzzmingw32-make.exe", "-f", "Makefile.dinput8", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
         else:
-            subprocess.run(["zzzmingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)
+            subprocess.run(["zzzmingw32-make.exe", "clean_windowfied"], cwd=os.path.abspath("./xv2patcher"), shell=True)'''
+        if dinput8:
+            os.remove("./xv2patcher/dinput8.dll")
+        else:            
+            os.remove("./xv2patcher/xinput1_3.dll")
+            
+        clean_extension("./xv2patcher", ".o")
+        clean_extension("./eternity_common", ".o")
         
         printc("Clean successful.", 'G')
     except Exception as e:
